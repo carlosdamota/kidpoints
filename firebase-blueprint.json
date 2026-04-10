@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "Family": {
+      "title": "Family",
+      "description": "A family account containing the point system state for multiple children.",
+      "type": "object",
+      "properties": {
+        "allowedEmails": {
+          "type": "array",
+          "description": "List of emails allowed to access this family data.",
+          "items": { "type": "string", "format": "email" }
+        },
+        "pin": {
+          "type": "string",
+          "description": "4-digit PIN for admin access."
+        },
+        "taskMode": {
+          "type": "string",
+          "enum": ["single", "repeatable"],
+          "description": "Whether tasks can be completed once or multiple times per day."
+        },
+        "maxDailyPoints": {
+          "type": "number",
+          "description": "Maximum points allowed per day if repeatable."
+        },
+        "children": {
+          "type": "array",
+          "description": "List of child profiles.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "theme": { "type": "string", "enum": ["robots", "space", "dinosaurs", "princesses", "cars"] },
+              "totalPoints": { "type": "number" },
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "points": { "type": "number" },
+                    "completedDates": { "type": "array", "items": { "type": "string" } }
+                  },
+                  "required": ["id", "name", "points", "completedDates"]
+                }
+              },
+              "rewards": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "cost": { "type": "number" },
+                    "availableDays": { "type": "array", "items": { "type": "number", "minimum": 0, "maximum": 6 } }
+                  },
+                  "required": ["id", "name", "cost"]
+                }
+              },
+              "history": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": { "type": "string" },
+                    "points": { "type": "number" },
+                    "reason": { "type": "string" },
+                    "type": { "type": "string", "enum": ["earn", "spend", "admin"] }
+                  },
+                  "required": ["date", "points", "reason", "type"]
+                }
+              }
+            },
+            "required": ["id", "name", "theme", "totalPoints", "tasks", "rewards", "history"]
+          }
+        }
+      },
+      "required": ["allowedEmails", "pin", "children", "taskMode", "maxDailyPoints"]
+    },
+    "Feedback": {
+      "title": "Feedback",
+      "description": "User suggestions and bug reports.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "type": { "type": "string", "enum": ["bug", "suggestion"] },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "familyId": { "type": "string" }
+      },
+      "required": ["userId", "type", "message", "timestamp", "familyId"]
+    }
+  },
+  "firestore": {
+    "/families/{familyId}": {
+      "schema": { "$ref": "#/entities/Family" },
+      "description": "Stores the family point system data."
+    },
+    "/feedback/{feedbackId}": {
+      "schema": { "$ref": "#/entities/Feedback" },
+      "description": "Stores user feedback and bug reports."
+    }
+  }
+}

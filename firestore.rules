@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model (Multi-Child)
+    // ===============================================================
+    // Collection: families
+    // Document ID: auto-generated
+    // Fields:
+    //   - allowedEmails: list of strings (required)
+    //   - pin: string (required, 4 digits)
+    //   - taskMode: string (required, 'single' or 'repeatable')
+    //   - maxDailyPoints: number (required)
+    //   - children: list of ChildProfile objects (required)
+    //
+    // ChildProfile:
+    //   - id: string
+    //   - name: string
+    //   - theme: string ('robots', 'space', 'dinosaurs', 'princesses', 'cars')
+    //   - totalPoints: number
+    //   - tasks: list of Task objects
+    //   - rewards: list of Reward objects
+    //   - history: list of HistoryEntry objects
+    //
+    // Collection: feedback
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string
+    //   - userEmail: string (optional)
+    //   - type: string ('bug', 'suggestion')
+    //   - message: string
+    //   - timestamp: timestamp
+    //   - familyId: string
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+
+    function isVerified() {
+      return isAuthenticated() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerified() && 
+             (request.auth.token.email.lower() == "cdamota.cd@gmail.com");
+    }
+
+    function isFamilyMember(data) {
+      return isAuthenticated() && 
+             data != null && 
+             'allowedEmails' in data && 
+             (request.auth.token.email in data.allowedEmails || isAdmin());
+    }
+
+    function hasRequiredFields(data) {
+      return data.keys().hasAll(['allowedEmails', 'pin', 'children', 'taskMode', 'maxDailyPoints']);
+    }
+
+    function hasOnlyAllowedFields(data) {
+      return data.keys().hasOnly(['allowedEmails', 'pin', 'children', 'taskMode', 'maxDailyPoints']);
+    }
+
+    function isValidFamily(data) {
+      return hasRequiredFields(data) &&
+             hasOnlyAllowedFields(data) &&
+             data.allowedEmails is list &&
+             data.allowedEmails.size() > 0 &&
+             data.allowedEmails.size() <= 10 &&
+             data.pin is string &&
+             data.pin.matches('^[0-9]{4}$') &&
+             data.taskMode in ['single', 'repeatable'] &&
+             data.maxDailyPoints is number &&
+             data.maxDailyPoints >= 0 &&
+             data.children is list &&
+             data.children.size() >= 0 &&
+             data.children.size() <= 10;
+    }
+
+    match /families/{familyId} {
+      // Read: Allow if authenticated and user's email is in allowedEmails or user is admin
+      allow read: if isFamilyMember(resource.data);
+      
+      // Create: User must be authenticated, data must be valid, and user's email must be in allowedEmails
+      allow create: if isAuthenticated() && 
+                       isValidFamily(request.resource.data) && 
+                       (request.auth.token.email in request.resource.data.allowedEmails || isAdmin());
+      
+      // Update: User must be an existing member, data must be valid, and user must remain a member
+      allow update: if isFamilyMember(resource.data) && 
+                       isValidFamily(request.resource.data) && 
+                       (request.auth.token.email in request.resource.data.allowedEmails || isAdmin());
+                       
+      // Delete: Only members or admin can delete
+      allow delete: if isFamilyMember(resource.data);
+    }
+
+    match /feedback/{feedbackId} {
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.type in ['bug', 'suggestion'] &&
+                       request.resource.data.message is string &&
+                       request.resource.data.message.size() > 0 &&
+                       request.resource.data.message.size() <= 5000;
+      
+      allow read: if isAdmin();
+    }
+  }
+}

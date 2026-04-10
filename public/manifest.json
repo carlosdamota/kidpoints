@@ -1,0 +1,25 @@
+{
+  "short_name": "Misiones",
+  "name": "Misiones Familia",
+  "description": "Aventura y misiones para toda la familia",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/rocket/192/192",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://picsum.photos/seed/rocket/512/512",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0a0a0a",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#00ffff",
+  "orientation": "portrait"
+}
