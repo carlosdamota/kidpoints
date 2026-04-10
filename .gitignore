@@ -6,3 +6,5 @@ coverage/
 *.log
 .env*
 !.env.example
+# Local Firebase config must never be committed
+firebase-applet-config.json
