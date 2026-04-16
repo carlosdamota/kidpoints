@@ -31,7 +31,7 @@ export function ThemeBackground() {
   const [isLandscape, setIsLandscape] = React.useState(false);
 
   React.useEffect(() => {
-    console.log("ThemeBackground: Theme changed to", theme);
+    // Theme change side effects if any
   }, [theme]);
 
   React.useEffect(() => {

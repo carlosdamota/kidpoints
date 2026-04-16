@@ -101,7 +101,6 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     const q = query(familiesRef, where('allowedEmails', 'array-contains', user.email));
 
     const discoverFamily = async () => {
-      console.log("Discovering family for email:", user.email);
       try {
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
