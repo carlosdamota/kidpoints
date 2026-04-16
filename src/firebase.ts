@@ -3,51 +3,33 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/
 import { getFirestore, getDocFromServer, doc } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
-const env = import.meta.env as Record<string, string | undefined>;
-const fallbackConfig: Record<string, string | undefined> = {
-  apiKey: "AIzaSyDNmLFHQJyTLFGrHbWdGaiqaQAjw6F4pP8",
-  authDomain: "family-quest-points.firebaseapp.com",
-  projectId: "family-quest-points",
-  storageBucket: "family-quest-points.firebasestorage.app",
-  messagingSenderId: "751286937853",
-  appId: "1:751286937853:web:1c22e9f4e7f81a2ab4f694",
-  measurementId: "",
-  firestoreDatabaseId: "ai-studio-b0b94068-2b94-410a-8bdd-e4d87b280480",
-};
-
-const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY || fallbackConfig.apiKey,
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || fallbackConfig.authDomain,
-  projectId: env.VITE_FIREBASE_PROJECT_ID || fallbackConfig.projectId,
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || fallbackConfig.storageBucket,
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || fallbackConfig.messagingSenderId,
-  appId: env.VITE_FIREBASE_APP_ID || fallbackConfig.appId,
-  measurementId: env.VITE_FIREBASE_MEASUREMENT_ID || fallbackConfig.measurementId,
-  firestoreDatabaseId: env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || fallbackConfig.firestoreDatabaseId,
-};
-
-const requiredEnvVars = [
+// ─── Required env vars — NO fallbacks, no hardcoded credentials ──────────────
+const REQUIRED_VARS = [
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_AUTH_DOMAIN",
   "VITE_FIREBASE_PROJECT_ID",
   "VITE_FIREBASE_APP_ID",
   "VITE_FIREBASE_FIRESTORE_DATABASE_ID",
-];
+] as const;
 
-const resolvedRequiredValues: Record<string, string | undefined> = {
-  VITE_FIREBASE_API_KEY: firebaseConfig.apiKey,
-  VITE_FIREBASE_AUTH_DOMAIN: firebaseConfig.authDomain,
-  VITE_FIREBASE_PROJECT_ID: firebaseConfig.projectId,
-  VITE_FIREBASE_APP_ID: firebaseConfig.appId,
-  VITE_FIREBASE_FIRESTORE_DATABASE_ID: firebaseConfig.firestoreDatabaseId,
-};
-
-const missingVars = requiredEnvVars.filter((key) => !resolvedRequiredValues[key]);
+const missingVars = REQUIRED_VARS.filter((key) => !import.meta.env[key]);
 if (missingVars.length > 0) {
   throw new Error(
-    `Missing required Firebase env vars: ${missingVars.join(", ")}. Copy .env.example to .env.local and set VITE_FIREBASE_* values.`,
+    `Missing required Firebase env vars: ${missingVars.join(", ")}.\n` +
+    `Copy .env.example to .env.local and fill in your VITE_FIREBASE_* values.`
   );
 }
+
+const firebaseConfig = {
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY as string,
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID as string,
+  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string | undefined,
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID as string,
+};
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
