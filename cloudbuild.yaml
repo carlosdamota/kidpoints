@@ -12,14 +12,14 @@ steps:
       - '--build-arg=VITE_FIREBASE_MEASUREMENT_ID=$_VITE_FIREBASE_MEASUREMENT_ID'
       - '--build-arg=VITE_FIREBASE_FIRESTORE_DATABASE_ID=$_VITE_FIREBASE_FIRESTORE_DATABASE_ID'
       - '-t'
-      - '$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+      - 'us-west1-docker.pkg.dev/family-quest-points/cloud-run-source-deploy/misiones-de-einar:$COMMIT_SHA'
       - '.'
 
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Push'
     args:
       - 'push'
-      - '$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+      - 'us-west1-docker.pkg.dev/family-quest-points/cloud-run-source-deploy/misiones-de-einar:$COMMIT_SHA'
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy'
@@ -27,15 +27,15 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - '$_SERVICE_NAME'
-      - '--image=$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
-      - '--region=$_DEPLOY_REGION'
-      - '--platform=$_PLATFORM'
+      - 'misiones-de-einar'
+      - '--image=us-west1-docker.pkg.dev/family-quest-points/cloud-run-source-deploy/misiones-de-einar:$COMMIT_SHA'
+      - '--region=us-west1'
+      - '--platform=managed'
       - '--allow-unauthenticated'
       - '--update-secrets=RESEND_API_KEY=RESEND_API_KEY:latest'
 
 images:
-  - '$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+  - 'us-west1-docker.pkg.dev/family-quest-points/cloud-run-source-deploy/misiones-de-einar:$COMMIT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY
