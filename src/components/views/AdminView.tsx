@@ -613,7 +613,7 @@ export function AdminView({ onClose }: AdminViewProps) {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-3 gap-3 w-full max-w-[260px]">
+          <div className="grid grid-cols-3 gap-3 w-full max-w-65">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, 'OK'].map((num) => (
               <button
                 key={num}
@@ -644,7 +644,7 @@ export function AdminView({ onClose }: AdminViewProps) {
               </button>
             ))}
           </div>
-          <div className="flex justify-between w-full max-w-[260px] mt-2">
+          <div className="flex justify-between w-full max-w-65 mt-2">
 
             <Button 
               variant="link"
@@ -676,34 +676,34 @@ export function AdminView({ onClose }: AdminViewProps) {
           </div>
 
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-6 md:grid-cols-5 gap-2 bg-gray-950/98 backdrop-blur-xl p-2 rounded-3xl border border-white/20 mb-8 !h-auto shadow-2xl">
+            <TabsList className="grid w-full grid-cols-6 md:grid-cols-5 gap-2 bg-gray-950/98 backdrop-blur-xl p-2 rounded-3xl border border-white/20 mb-8 h-auto! shadow-2xl">
               <TabsTrigger 
                 value="general" 
-                className="col-span-2 md:col-span-1 rounded-2xl py-3.5 !h-auto data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
+                className="col-span-2 md:col-span-1 rounded-2xl py-3.5 h-auto! data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
               >
                 General
               </TabsTrigger>
               <TabsTrigger 
                 value="niños" 
-                className="col-span-2 md:col-span-1 rounded-2xl py-3.5 !h-auto data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
+                className="col-span-2 md:col-span-1 rounded-2xl py-3.5 h-auto! data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
               >
                 Niños
               </TabsTrigger>
               <TabsTrigger 
                 value="misiones" 
-                className="col-span-2 md:col-span-1 rounded-2xl py-3.5 !h-auto data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
+                className="col-span-2 md:col-span-1 rounded-2xl py-3.5 h-auto! data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
               >
                 Misiones
               </TabsTrigger>
               <TabsTrigger 
                 value="premios" 
-                className="col-span-3 md:col-span-1 rounded-2xl py-3.5 !h-auto data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
+                className="col-span-3 md:col-span-1 rounded-2xl py-3.5 h-auto! data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
               >
                 Premios
               </TabsTrigger>
               <TabsTrigger 
                 value="guia" 
-                className="col-span-3 md:col-span-1 rounded-2xl py-3.5 !h-auto data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
+                className="col-span-3 md:col-span-1 rounded-2xl py-3.5 h-auto! data-[state=active]:bg-cyan-neon data-[state=active]:text-space-dark data-[state=active]:shadow-[0_0_15px_rgba(0,255,255,0.4)] text-white/70 font-black text-sm transition-all hover:bg-white/5 hover:text-white"
               >
                 Guía
               </TabsTrigger>
@@ -1002,7 +1002,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                     </button>
                   </div>
                   <textarea
-                    className="w-full bg-black/50 border border-white/20 text-white placeholder:text-white/40 focus:ring-1 focus:ring-cyan-neon focus:border-cyan-neon rounded-xl p-3 text-sm min-h-[100px] resize-none"
+                    className="w-full bg-black/50 border border-white/20 text-white placeholder:text-white/40 focus:ring-1 focus:ring-cyan-neon focus:border-cyan-neon rounded-xl p-3 text-sm min-h-25 resize-none"
                     placeholder={feedbackType === 'suggestion' ? "Escribe tu sugerencia aquí..." : "Describe el error que has encontrado..."}
                     value={feedbackMessage}
                     onChange={(e) => setFeedbackMessage(e.target.value)}

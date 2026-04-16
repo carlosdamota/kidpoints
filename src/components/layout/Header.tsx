@@ -12,7 +12,7 @@ export function Header({ onOpenAdmin }: HeaderProps) {
   if (!state || !activeChild) return null;
 
   return (
-    <header className="py-3 px-4 md:px-8 flex justify-between items-center border-b border-cyan-neon/20 bg-gray-950/40 sticky top-0 z-40 backdrop-blur-xl">
+    <header className="py-3 px-4 w-full flex justify-between items-center border-b border-cyan-neon/20 bg-gray-950/40 sticky top-0 z-40 backdrop-blur-xl">
       <div className="flex items-center gap-3 overflow-x-auto no-scrollbar flex-1 py-6 -my-6 px-4 -mx-4 mr-4">
         {state.children.map(child => (
           <button

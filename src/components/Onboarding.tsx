@@ -124,7 +124,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           <div className="space-y-3">
             <h2 className="text-2xl font-black text-gold-neon text-center uppercase tracking-tight">ESTILO VISUAL</h2>
             <p className="text-center text-gray-200 text-sm">Personaliza la interfaz con la temática favorita de {name}.</p>
-            <div className="grid grid-cols-1 gap-2 max-h-[240px] overflow-y-auto pr-1.5 custom-scrollbar">
+            <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1.5 custom-scrollbar">
               {THEMES.map(t => (
                 <Card
                   key={t.id}
@@ -156,7 +156,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
               <p className="text-center text-gray-200 text-sm">Selecciona las tareas diarias. Al completarlas, {name} ganará puntos.</p>
               <p className="text-[10px] text-center text-cyan-neon/80 uppercase font-black tracking-widest italic">Recomendamos empezar con 3-5 misiones</p>
             </div>
-            <div className="grid gap-2 max-h-[260px] overflow-y-auto pr-1.5 custom-scrollbar">
+            <div className="grid gap-2 max-h-65 overflow-y-auto pr-1.5 custom-scrollbar">
               {PREDEFINED_TASKS.map(task => {
                 const isSelected = selectedTasks.includes(task.id);
                 return (
@@ -196,7 +196,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
               <p className="text-center text-gray-200 text-sm">¿Por qué podrá canjear sus puntos? Elige premios motivadores.</p>
               <p className="text-[10px] text-center text-cyan-neon/80 uppercase font-black tracking-widest italic">Puedes editarlos o añadir nuevos luego</p>
             </div>
-            <div className="grid gap-2 max-h-[260px] overflow-y-auto pr-1.5 custom-scrollbar">
+            <div className="grid gap-2 max-h-65 overflow-y-auto pr-1.5 custom-scrollbar">
               {PREDEFINED_REWARDS.map(reward => {
                 const isSelected = selectedRewards.includes(reward.id);
                 return (
@@ -225,7 +225,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         {step === 5 && (
           <div className="space-y-4">
             <h2 className="text-2xl font-black text-gold-neon text-center uppercase tracking-tight">PRIVACIDAD</h2>
-            <div className="bg-gray-900 p-4 rounded-xl border border-white/10 text-xs text-gray-200 space-y-3 max-h-[220px] overflow-y-auto leading-relaxed shadow-inner custom-scrollbar">
+            <div className="bg-gray-900 p-4 rounded-xl border border-white/10 text-xs text-gray-200 space-y-3 max-h-56 overflow-y-auto leading-relaxed shadow-inner custom-scrollbar">
               <p>Para continuar, necesitamos que aceptes nuestra política de privacidad adaptada al RGPD.</p>
               <p><strong>Uso de datos:</strong> Los nombres y progresos de tus hijos se guardan de forma privada en servidores seguros de la UE. Solo tú y las personas que autorices pueden verlos.</p>
               <p><strong>Cookies:</strong> Solo usamos cookies técnicas esenciales para que la app funcione. No hay rastreo publicitario.</p>

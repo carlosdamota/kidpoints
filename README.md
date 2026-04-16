@@ -23,6 +23,7 @@ View your app in AI Studio: https://ai.studio/apps/b0b94068-2b94-410a-8bdd-e4d87
    `npm run dev`
 
 ## Security note
+
 - Do not commit `.env.local` or any file containing real API keys or Firebase credentials.
 - `firebase-applet-config.json` is now ignored by Git. If you still have it locally, keep it out of version control.
 - If this file was already pushed to a remote repository, rotate the Firebase keys and use a history-cleaning tool such as `git filter-repo` or `BFG Repo-Cleaner`.
