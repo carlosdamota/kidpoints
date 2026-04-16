@@ -18,17 +18,17 @@ ARG VITE_FIREBASE_APP_ID
 ARG VITE_FIREBASE_MEASUREMENT_ID
 ARG VITE_FIREBASE_FIRESTORE_DATABASE_ID
 
-# Expose as env vars so Vite picks them up during `npm run build`
-ENV VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY \
-    VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN \
-    VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID \
-    VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET \
-    VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID \
-    VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID \
-    VITE_FIREBASE_MEASUREMENT_ID=$VITE_FIREBASE_MEASUREMENT_ID \
-    VITE_FIREBASE_FIRESTORE_DATABASE_ID=$VITE_FIREBASE_FIRESTORE_DATABASE_ID
-
-RUN npm run build
+# Strip any trailing newlines/CRs (Cloud Build trigger values can have them)
+# Inline assignment scopes trimmed vars only to this RUN command
+RUN VITE_FIREBASE_API_KEY="$(printf '%s' "$VITE_FIREBASE_API_KEY" | tr -d '\n\r')" \
+    VITE_FIREBASE_AUTH_DOMAIN="$(printf '%s' "$VITE_FIREBASE_AUTH_DOMAIN" | tr -d '\n\r')" \
+    VITE_FIREBASE_PROJECT_ID="$(printf '%s' "$VITE_FIREBASE_PROJECT_ID" | tr -d '\n\r')" \
+    VITE_FIREBASE_STORAGE_BUCKET="$(printf '%s' "$VITE_FIREBASE_STORAGE_BUCKET" | tr -d '\n\r')" \
+    VITE_FIREBASE_MESSAGING_SENDER_ID="$(printf '%s' "$VITE_FIREBASE_MESSAGING_SENDER_ID" | tr -d '\n\r')" \
+    VITE_FIREBASE_APP_ID="$(printf '%s' "$VITE_FIREBASE_APP_ID" | tr -d '\n\r')" \
+    VITE_FIREBASE_MEASUREMENT_ID="$(printf '%s' "$VITE_FIREBASE_MEASUREMENT_ID" | tr -d '\n\r')" \
+    VITE_FIREBASE_FIRESTORE_DATABASE_ID="$(printf '%s' "$VITE_FIREBASE_FIRESTORE_DATABASE_ID" | tr -d '\n\r')" \
+    npm run build
 
 # ─── Runtime stage ────────────────────────────────────────────────────────────
 FROM node:22-slim
