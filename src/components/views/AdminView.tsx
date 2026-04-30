@@ -232,7 +232,13 @@ interface AdminViewProps {
 }
 
 export function AdminView({ onClose }: AdminViewProps) {
-  const { state, activeChild, user, updateState, updateChildState, addChild, deleteChild, deleteFamily, currentDate, familyId } = useFamily();
+  const { 
+    state, childrenList, activeChildTasks, activeChildRewards, activeChildHistory,
+    activeChild, user, updateState, updateChildState, 
+    addChild, deleteChild, deleteFamily, currentDate, familyId,
+    addTask, updateTask, deleteTask, addReward, updateReward, deleteReward,
+    deleteHistoryEntry, addPoints, resetChildData 
+  } = useFamily();
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [newEmailInput, setNewEmailInput] = useState('');
@@ -400,7 +406,7 @@ export function AdminView({ onClose }: AdminViewProps) {
       completedDates: [],
       icon: newTaskIcon || null
     };
-    updateChildState(activeChild.id, { tasks: [...activeChild.tasks, newTask] });
+    addTask(activeChild.id, newTask);
     setNewTaskName('');
     setNewTaskPoints('');
     setNewTaskIcon(undefined);
@@ -415,35 +421,11 @@ export function AdminView({ onClose }: AdminViewProps) {
       icon: newRewardIcon || null,
       availableDays: newRewardAvailableDays
     };
-    updateChildState(activeChild.id, { rewards: [...activeChild.rewards, newReward] });
+    addReward(activeChild.id, newReward);
     setNewRewardName('');
     setNewRewardCost('');
     setNewRewardIcon(undefined);
     setNewRewardAvailableDays([0, 1, 2, 3, 4, 5, 6]);
-  };
-
-  const handleDeleteTask = (id: string) => {
-    if (!activeChild) return;
-    openModal(
-      '¿Eliminar misión?',
-      '¿Estás seguro de que quieres eliminar esta misión de la lista?',
-      () => {
-        updateChildState(activeChild.id, { tasks: activeChild.tasks.filter(t => t.id !== id) });
-      },
-      'destructive'
-    );
-  };
-
-  const handleDeleteReward = (id: string) => {
-    if (!activeChild) return;
-    openModal(
-      '¿Eliminar premio?',
-      '¿Estás seguro de que quieres eliminar este premio de la tienda?',
-      () => {
-        updateChildState(activeChild.id, { rewards: activeChild.rewards.filter(r => r.id !== id) });
-      },
-      'destructive'
-    );
   };
 
   const handleResetWeek = () => {
@@ -452,48 +434,26 @@ export function AdminView({ onClose }: AdminViewProps) {
       '¿Resetear semana?',
       '¿Estás seguro de que quieres resetear toda la semana? Se borrarán los puntos actuales y el historial.',
       () => {
-        updateChildState(activeChild.id, {
-          totalPoints: 0,
-          tasks: activeChild.tasks.map(t => ({ ...t, completedDates: [] })),
-          history: [],
-        });
+        resetChildData(activeChild.id);
       },
       'destructive'
     );
   };
 
-  const handleDeleteHistoryEntry = (entryIndex: number, entry: any) => {
+  const handleDeleteHistoryEntry = (entry: any) => {
     if (!activeChild) return;
     openModal(
       '¿Eliminar registro?',
       `¿Estás seguro de que quieres eliminar este registro de "${entry.reason}"? Se ajustarán los puntos.`,
       () => {
-        const newPoints = Math.max(0, activeChild.totalPoints - entry.points);
-        const newHistory = [...activeChild.history];
-        newHistory.splice(entryIndex, 1);
-
-        let newTasks = activeChild.tasks;
+        let taskRestore = undefined;
         if (entry.type === 'earn' && entry.reason.startsWith('Misión completada: ')) {
-          const taskName = entry.reason.replace('Misión completada: ', '');
-          newTasks = activeChild.tasks.map(task => {
-            if (task.name === taskName && task.completedDates) {
-              const dateToRemove = entry.dateStr || currentDate;
-              const dateIndex = task.completedDates.indexOf(dateToRemove);
-              if (dateIndex > -1) {
-                const newDates = [...task.completedDates];
-                newDates.splice(dateIndex, 1);
-                return { ...task, completedDates: newDates };
-              }
-            }
-            return task;
-          });
+          taskRestore = {
+            name: entry.reason.replace('Misión completada: ', ''),
+            dateStr: entry.dateStr || currentDate
+          };
         }
-
-        updateChildState(activeChild.id, {
-          totalPoints: newPoints,
-          history: newHistory,
-          tasks: newTasks
-        });
+        deleteHistoryEntry(activeChild.id, entry.id, entry.points, taskRestore);
       },
       'destructive'
     );
@@ -722,7 +682,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    {state.allowedEmails.map(email => (
+                    {state?.allowedEmails.map(email => (
                       <div key={email} className="bg-black/80 p-3 rounded-xl text-sm border border-white/20 text-white flex justify-between items-center">
                         <div className="font-bold">
                           {email} {email === user?.email && <span className="text-cyan-neon text-xs ml-2 font-black">(Tú)</span>}
@@ -880,22 +840,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                       size="icon"
                       onClick={() => {
                         if (!activeChild) return;
-                        const newPoints = Math.max(0, activeChild.totalPoints - 1);
-                        const diff = newPoints - activeChild.totalPoints;
-                        if (diff !== 0) {
-                          updateChildState(activeChild.id, { 
-                            totalPoints: newPoints,
-                            history: [
-                              {
-                                date: new Date().toISOString(),
-                                points: diff,
-                                reason: 'Ajuste manual (Padres)',
-                                type: 'admin' as const,
-                              },
-                              ...activeChild.history,
-                            ].slice(0, 100),
-                          });
-                        }
+                        addPoints(activeChild.id, -1, 'Ajuste manual (Padres)');
                       }}
                       className="w-16 h-16 rounded-2xl border-2 border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-400 transition-all"
                     >
@@ -909,18 +854,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                       size="icon"
                       onClick={() => {
                         if (!activeChild) return;
-                        updateChildState(activeChild.id, { 
-                          totalPoints: activeChild.totalPoints + 1,
-                          history: [
-                            {
-                              date: new Date().toISOString(),
-                              points: 1,
-                              reason: 'Ajuste manual (Padres)',
-                              type: 'admin' as const,
-                            },
-                            ...activeChild.history,
-                          ].slice(0, 100),
-                        });
+                        addPoints(activeChild.id, 1, 'Ajuste manual (Padres)');
                       }}
                       className="w-16 h-16 rounded-2xl border-2 border-green-500/50 bg-green-500/10 text-green-400 hover:bg-green-500/20 hover:text-green-300 hover:border-green-400 transition-all"
                     >
@@ -934,8 +868,8 @@ export function AdminView({ onClose }: AdminViewProps) {
               <div className="space-y-4">
                 <h3 className="font-black text-white uppercase tracking-wider pl-2">Historial Reciente ({activeChild?.name})</h3>
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                  {activeChild?.history.map((entry, i) => (
-                    <div key={i} className="bg-black/80 border border-white/10 p-4 rounded-2xl flex justify-between items-center text-sm shadow-xl">
+                  {activeChildHistory.map((entry, i) => (
+                    <div key={entry.id || i} className="bg-black/80 border border-white/10 p-4 rounded-2xl flex justify-between items-center text-sm shadow-xl">
                       <div className="flex-1 pr-4">
                         <p className="font-bold text-white">{entry.reason}</p>
                         <p className="text-white/50 text-xs mt-1">{format(parseISO(entry.date), 'dd/MM HH:mm')}</p>
@@ -950,7 +884,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteHistoryEntry(i, entry)}
+                          onClick={() => handleDeleteHistoryEntry(entry)}
                           className="text-red-400 hover:text-red-300 hover:bg-red-500/20 w-8 h-8 rounded-full"
                         >
                           <Trash2 size={16} />
@@ -1094,8 +1028,8 @@ export function AdminView({ onClose }: AdminViewProps) {
               {/* Manage Children */}
               <div className="space-y-4">
                 <h3 className="font-black text-white uppercase tracking-wider pl-2">Gestionar Perfiles</h3>
-                {state.children.map(child => (
-                  <div key={child.id} className="flex gap-2 items-center bg-white/5 p-3 rounded-2xl border border-white/10">
+                {childrenList.map(child => (
+                    <div key={child.id} className="flex gap-2 items-center bg-white/5 p-3 rounded-2xl border border-white/10">
                     <div className="w-10 h-10 rounded-xl bg-cyan-neon/10 flex items-center justify-center border border-cyan-neon/30">
                       <ThemeIcon theme={child.theme} size={20} className="text-cyan-neon" />
                     </div>
@@ -1108,7 +1042,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                       size="icon" 
                       className="text-red-400 hover:text-red-300 hover:bg-red-400/20 rounded-lg h-10 w-10" 
                       onClick={() => {
-                        if (state.children.length > 1) {
+                        if (childrenList.length > 1) {
                           openModal(
                             '¿Eliminar perfil?',
                             `¿Estás seguro de que quieres eliminar el perfil de ${child.name}? Se perderán todos sus datos.`,
@@ -1117,7 +1051,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                           );
                         }
                       }}
-                      disabled={state.children.length <= 1}
+                      disabled={childrenList.length <= 1}
                     >
                       <Trash2 className="h-5 w-5" />
                     </Button>
@@ -1140,7 +1074,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                         onClick={() => updateState({ taskMode: 'single' })}
                         className={cn(
                           "flex-1 py-3 text-sm font-black rounded-lg transition-all",
-                          state.taskMode === 'single' ? "bg-cyan-neon text-space-dark shadow-md" : "text-white/70 hover:text-white"
+                          state?.taskMode === 'single' ? "bg-cyan-neon text-space-dark shadow-md" : "text-white/70 hover:text-white"
                         )}
                       >
                         Una vez al día
@@ -1149,7 +1083,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                         onClick={() => updateState({ taskMode: 'repeatable' })}
                         className={cn(
                           "flex-1 py-3 text-sm font-black rounded-lg transition-all",
-                          state.taskMode === 'repeatable' ? "bg-cyan-neon text-space-dark shadow-md" : "text-white/70 hover:text-white"
+                          state?.taskMode === 'repeatable' ? "bg-cyan-neon text-space-dark shadow-md" : "text-white/70 hover:text-white"
                         )}
                       >
                         Repetibles
@@ -1157,7 +1091,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                     </div>
                   </div>
 
-                  {state.taskMode === 'repeatable' && (
+                  {state?.taskMode === 'repeatable' && (
                     <div>
                       <label className="text-sm text-white font-black block mb-2">Puntos máximos diarios</label>
                       <Input 
@@ -1234,7 +1168,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                   <CardTitle className="text-white font-black tracking-wide uppercase">EDITAR MISIONES ({activeChild?.name})</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {activeChild?.tasks.map(task => (
+                  {activeChildTasks.map(task => (
                     <EditableItemRow
                       key={task.id}
                       initialName={task.name}
@@ -1243,16 +1177,26 @@ export function AdminView({ onClose }: AdminViewProps) {
                       isNegativeAllowed={true}
                       onSave={(newName, newPoints, newIcon) => {
                         if (activeChild) {
-                          const newTasks = activeChild.tasks.map(t => 
-                            t.id === task.id ? { ...t, name: newName, points: newPoints, icon: newIcon || null } : t
-                          );
-                          updateChildState(activeChild.id, { tasks: newTasks });
+                          updateTask(activeChild.id, task.id, { 
+                            name: newName, 
+                            points: newPoints, 
+                            icon: newIcon || null 
+                          });
                         }
                       }}
-                      onDelete={() => handleDeleteTask(task.id)}
+                      onDelete={() => {
+                        if (activeChild) {
+                          openModal(
+                            '¿Eliminar misión?',
+                            `¿Estás seguro de que quieres eliminar la misión "${task.name}"?`,
+                            () => deleteTask(activeChild.id, task.id),
+                            'destructive'
+                          );
+                        }
+                      }}
                     />
                   ))}
-                  {activeChild?.tasks.length === 0 && (
+                  {activeChildTasks.length === 0 && (
                     <p className="text-center text-white/40 py-4 font-bold md:col-span-2 lg:col-span-3">No hay misiones creadas.</p>
                   )}
                 </CardContent>
@@ -1352,7 +1296,7 @@ export function AdminView({ onClose }: AdminViewProps) {
                   <CardTitle className="text-white font-black tracking-wide uppercase">EDITAR PREMIOS ({activeChild?.name})</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {activeChild?.rewards.map(reward => (
+                  {activeChildRewards.map(reward => (
                     <EditableItemRow
                       key={reward.id}
                       initialName={reward.name}
@@ -1363,16 +1307,27 @@ export function AdminView({ onClose }: AdminViewProps) {
                       showAvailability={true}
                       onSave={(newName, newCost, newIcon, newDays) => {
                         if (activeChild) {
-                          const newRewards = activeChild.rewards.map(r => 
-                            r.id === reward.id ? { ...r, name: newName, cost: newCost, icon: newIcon || null, availableDays: newDays } : r
-                          );
-                          updateChildState(activeChild.id, { rewards: newRewards });
+                          updateReward(activeChild.id, reward.id, { 
+                            name: newName, 
+                            cost: newCost, 
+                            icon: newIcon || null, 
+                            availableDays: newDays 
+                          });
                         }
                       }}
-                      onDelete={() => handleDeleteReward(reward.id)}
+                      onDelete={() => {
+                        if (activeChild) {
+                          openModal(
+                            '¿Eliminar premio?',
+                            `¿Estás seguro de que quieres eliminar el premio "${reward.name}"?`,
+                            () => deleteReward(activeChild.id, reward.id),
+                            'destructive'
+                          );
+                        }
+                      }}
                     />
                   ))}
-                  {activeChild?.rewards.length === 0 && (
+                  {activeChildRewards.length === 0 && (
                     <p className="text-center text-white/40 py-4 font-bold md:col-span-2 lg:col-span-3">No hay premios creados.</p>
                   )}
                 </CardContent>

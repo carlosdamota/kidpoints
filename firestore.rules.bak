@@ -80,11 +80,7 @@ service cloud.firestore {
         request.auth.token.email in resource.data.allowedEmails || 
         request.auth.token.email.lower() == "cdamota.cd@gmail.com"
       );
-      allow list: if isAuthenticated() &&
-                    request.query.filters.size() == 1 &&
-                    request.query.filters[0].fieldPath == 'allowedEmails' &&
-                    request.query.filters[0].op == 'ARRAY_CONTAINS' &&
-                    request.query.filters[0].value == request.auth.token.email;
+      allow list: if isAuthenticated() && request.auth.token.email in resource.data.allowedEmails;
       allow create: if isAuthenticated() && 
                        isValidFamily(request.resource.data) && 
                        (request.auth.token.email in request.resource.data.allowedEmails || isAdmin());

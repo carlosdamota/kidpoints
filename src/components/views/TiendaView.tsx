@@ -53,7 +53,7 @@ export function TiendaView() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {activeChild.rewards.map((reward) => {
+        {(activeChild.rewards ?? []).map((reward) => {
           const canAfford = activeChild.totalPoints >= reward.cost;
           const available = isAvailableToday(reward.availableDays);
           const isDisabled = !canAfford || isLimitReached || !available;
