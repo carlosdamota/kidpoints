@@ -28,7 +28,8 @@ RUN VITE_FIREBASE_API_KEY="$(printf '%s' "$VITE_FIREBASE_API_KEY" | tr -d '\n\r'
     VITE_FIREBASE_APP_ID="$(printf '%s' "$VITE_FIREBASE_APP_ID" | tr -d '\n\r')" \
     VITE_FIREBASE_MEASUREMENT_ID="$(printf '%s' "$VITE_FIREBASE_MEASUREMENT_ID" | tr -d '\n\r')" \
     VITE_FIREBASE_FIRESTORE_DATABASE_ID="$(printf '%s' "$VITE_FIREBASE_FIRESTORE_DATABASE_ID" | tr -d '\n\r')" \
-    npm run build
+    npm run build && \
+    npx esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist-server/server.js
 
 # ─── Runtime stage ────────────────────────────────────────────────────────────
 FROM node:22-slim
@@ -38,12 +39,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 
-COPY server.ts tsconfig.json ./
-COPY src/emails ./src/emails
+COPY --from=builder /app/dist-server ./dist-server
 COPY --from=builder /app/dist ./dist
 
 ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["npx", "tsx", "server.ts"]
+CMD ["node", "dist-server/server.js"]

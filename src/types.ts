@@ -15,6 +15,7 @@ export interface Reward {
 }
 
 export interface HistoryEntry {
+  id?: string;
   date: string; // ISO string
   dateStr?: string; // YYYY-MM-DD local string
   points: number;
@@ -22,12 +23,17 @@ export interface HistoryEntry {
   type: 'earn' | 'spend' | 'admin';
 }
 
-export interface AppState {
-  children: ChildProfile[];
+export interface FamilyDoc {
+  id?: string;
+  allowedEmails: string[];
   pin: string;
   taskMode: 'single' | 'repeatable';
   maxDailyPoints: number;
-  allowedEmails: string[];
+  migrated?: boolean;
+}
+
+export interface AppState extends FamilyDoc {
+  children: ChildProfile[];
 }
 
 export interface ChildProfile {
@@ -35,7 +41,7 @@ export interface ChildProfile {
   name: string;
   theme: 'robots' | 'space' | 'dinosaurs' | 'princesses' | 'cars';
   totalPoints: number;
-  tasks: Task[];
-  rewards: Reward[];
-  history: HistoryEntry[];
+  tasks?: Task[]; // Opcional ahora, se cargan de subcolección
+  rewards?: Reward[]; // Opcional ahora, se cargan de subcolección
+  history?: HistoryEntry[]; // Opcional ahora, se cargan de subcolección
 }

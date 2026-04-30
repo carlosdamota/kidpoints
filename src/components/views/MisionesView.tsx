@@ -42,7 +42,7 @@ export function MisionesView() {
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {activeChild.tasks.map((task) => {
+        {(activeChild.tasks ?? []).map((task) => {
           const completedDates = task.completedDates || [];
           const isCompletedSingle = state.taskMode === 'single' && completedDates.includes(currentDate);
           const wouldExceedMax = state.taskMode === 'repeatable' && (pointsToday + task.points > state.maxDailyPoints);

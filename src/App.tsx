@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Onboarding } from "./components/Onboarding";
@@ -10,11 +10,11 @@ import { BottomNav, Tab } from "./components/layout/BottomNav";
 import { CelebrationOverlay } from "./components/layout/CelebrationOverlay";
 import { ThemeBackground } from "./components/layout/ThemeBackground";
 
-import { LoginView } from "./components/views/LoginView";
-import { MisionesView } from "./components/views/MisionesView";
-import { TiendaView } from "./components/views/TiendaView";
-import { StatsView } from "./components/views/StatsView";
-import { AdminView } from "./components/views/AdminView";
+const LoginView = lazy(() => import("./components/views/LoginView").then(m => ({ default: m.LoginView })));
+const MisionesView = lazy(() => import("./components/views/MisionesView").then(m => ({ default: m.MisionesView })));
+const TiendaView = lazy(() => import("./components/views/TiendaView").then(m => ({ default: m.TiendaView })));
+const StatsView = lazy(() => import("./components/views/StatsView").then(m => ({ default: m.StatsView })));
+const AdminView = lazy(() => import("./components/views/AdminView").then(m => ({ default: m.AdminView })));
 
 export default function AppWrapper() {
   return (
@@ -41,7 +41,11 @@ function App() {
   }
 
   if (!user) {
-    return <LoginView />;
+    return (
+      <Suspense fallback={<div className='min-h-screen flex items-center justify-center text-cyan-neon'>Iniciando sesión...</div>}>
+        <LoginView />
+      </Suspense>
+    );
   }
 
   if (needsOnboarding) {
@@ -73,12 +77,14 @@ function App() {
       <Header onOpenAdmin={() => setActiveTab("admin")} />
       <div className='min-h-screen flex flex-col max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative pb-20 md:pb-28'>
         <main className='flex-1 p-4 md:p-8'>
-          <AnimatePresence mode='wait'>
-            {activeTab === "misiones" && <MisionesView />}
-            {activeTab === "puntos" && <StatsView />}
-            {activeTab === "tienda" && <TiendaView />}
-            {activeTab === "admin" && <AdminView onClose={() => setActiveTab("misiones")} />}
-          </AnimatePresence>
+          <Suspense fallback={<div className="flex items-center justify-center p-8 text-cyan-neon animate-pulse">Cargando sección...</div>}>
+            <AnimatePresence mode='wait'>
+              {activeTab === "misiones" && <MisionesView key="misiones" />}
+              {activeTab === "puntos" && <StatsView key="puntos" />}
+              {activeTab === "tienda" && <TiendaView key="tienda" />}
+              {activeTab === "admin" && <AdminView key="admin" onClose={() => setActiveTab("misiones")} />}
+            </AnimatePresence>
+          </Suspense>
         </main>
 
         <BottomNav
