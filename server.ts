@@ -5,14 +5,6 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Resend } from "resend";
-import { render } from "@react-email/components";
-import React from "react";
-import { InvitationEmail } from "./src/emails/InvitationEmail.tsx";
-import { FeedbackEmail } from "./src/emails/FeedbackEmail.tsx";
-import { GoogleGenAI } from "@google/genai";
-import fs from "fs";
-import sharp from "sharp";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,7 +15,8 @@ function isValidEmail(email: unknown): email is string {
   return typeof email === 'string' && EMAIL_REGEX.test(email.trim());
 }
 
-function getResendClient(): Resend {
+async function getResendClient() {
+  const { Resend } = await import("resend");
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error('RESEND_API_KEY is not configured. Add it to your .env.local file.');
@@ -39,51 +32,6 @@ async function startServer() {
   const PORT = Number(process.env.PORT) || 3000;
   app.use(express.json());
 
-  // API Routes
-  app.post("/api/generate-backgrounds", async (req, res) => {
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-      const themes = {
-        robots: "Cute cartoon robot workshop background for a kids app, vibrant primary colors, simple soft shapes, friendly toy robots, 2D flat illustration style, no text, high quality, childish aesthetic",
-        space: "Cute cartoon space background for a kids app, smiling planets, colorful stars, purple and blue nebula, 2D flat illustration style, no text, high quality, childish aesthetic",
-        dinosaurs: "Cute cartoon dinosaur jungle background for a kids app, friendly baby dinosaurs, happy volcano, bright green and yellow tones, 2D flat illustration style, no text, high quality, childish aesthetic",
-        princesses: "Cute cartoon princess castle in the clouds background for a kids app, rainbows, sparkles, pink and gold pastel tones, 2D flat illustration style, no text, high quality, childish aesthetic",
-        cars: "Cute cartoon toy car city background for a kids app, colorful winding roads, simple block buildings, bright red and blue tones, 2D flat illustration style, no text, high quality, childish aesthetic"
-      };
-
-      const dir = path.join(process.cwd(), 'public', 'themes');
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-      const results = [];
-      const errors = [];
-      for (const [theme, prompt] of Object.entries(themes)) {
-        console.log(`Generating ${theme}...`);
-        try {
-          const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: { parts: [{ text: prompt }] },
-            config: { imageConfig: { aspectRatio: "9:16" } }
-          });
-          const base64 = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-          if (base64) {
-            const buffer = Buffer.from(base64, 'base64');
-            await sharp(buffer)
-              .webp({ quality: 80 })
-              .toFile(path.join(dir, `${theme}.webp`));
-            results.push(theme);
-          } else {
-            errors.push({ theme, error: 'No base64 data' });
-          }
-        } catch(e) {
-          console.error(`Failed ${theme}:`, e);
-          errors.push({ theme, error: String(e) });
-        }
-      }
-      res.json({ success: true, results, errors });
-    } catch (error) {
-      res.status(500).json({ error: String(error) });
-    }
-  });
 
   app.post("/api/invite", async (req, res) => {
     const { email, childName, inviterName } = req.body;
@@ -103,7 +51,11 @@ async function startServer() {
     }
 
     try {
-      const resend = getResendClient();
+      const resend = await getResendClient();
+      const { render } = await import("@react-email/components");
+      const React = (await import("react")).default;
+      const { InvitationEmail } = await import("./src/emails/InvitationEmail.tsx");
+
       const appUrl = process.env.APP_URL || 'https://ais-dev-w6pvftjnz24rditbzjsy6t-627353199372.europe-west2.run.app';
 
       const html = await render(
@@ -152,7 +104,11 @@ async function startServer() {
     }
 
     try {
-      const resend = getResendClient();
+      const resend = await getResendClient();
+      const { render } = await import("@react-email/components");
+      const React = (await import("react")).default;
+      const { FeedbackEmail } = await import("./src/emails/FeedbackEmail.tsx");
+
       const toEmail = "cdamota.cd@gmail.com";
 
       const html = await render(
